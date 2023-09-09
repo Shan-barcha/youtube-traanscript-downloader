@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 
 const TranscriptDownloader = () => {
@@ -12,13 +12,13 @@ const TranscriptDownloader = () => {
   const fetchDataAndDownload = async () => {
     try {
       // Extract the video ID from the input (assuming the format: https://www.youtube.com/watch?v=VIDEO_ID)
-      const videoId = videoLink.match(/v=([^&]+)/)[1];
+      // const videoId = videoLink.match(/v=([^&]+)/)[1];
 
       const options = {
         method: 'GET',
         url: 'https://youtube-transcriptor.p.rapidapi.com/transcript',
         params: {
-          video_id: videoId,
+          video_id: videoLink,
           lang: 'en',
         },
         headers: {
@@ -34,16 +34,15 @@ const TranscriptDownloader = () => {
 
       // Convert the API response data to text (JSON in this case)
       const jsonData = JSON.stringify(response.data);
-      console.log(response.data, "HAHHAHAHA");
 
       // Create a Blob containing the text data
-      // const blob = new Blob([jsonData], { type: 'application/json' });
+      const blob = new Blob([jsonData], { type: 'application/json' });
 
       // Create a download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'transcript.json'; // You can customize the filename here
+      a.download = 'transcript.txt'; // You can customize the filename here
       a.style.display = 'none';
 
       // Append the link to the DOM and trigger the download
