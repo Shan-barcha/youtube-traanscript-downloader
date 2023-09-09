@@ -4,6 +4,7 @@ import axios from 'axios';
 const TranscriptDownloader = () => {
   const [videoLink, setVideoLink] = useState('');
   const [transcriptData, setTranscriptData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleVideoLinkChange = (e) => {
     setVideoLink(e.target.value);
@@ -11,8 +12,7 @@ const TranscriptDownloader = () => {
 
   const fetchDataAndDownload = async () => {
     try {
-      // Extract the video ID from the input (assuming the format: https://www.youtube.com/watch?v=VIDEO_ID)
-      // const videoId = videoLink.match(/v=([^&]+)/)[1];
+      setIsLoading(true); // Show loading state
 
       const options = {
         method: 'GET',
@@ -28,48 +28,55 @@ const TranscriptDownloader = () => {
       };
 
       const response = await axios.request(options);
-
-      // Set the transcript data in state
       setTranscriptData(response.data);
 
-      // Convert the API response data to text (JSON in this case)
       const jsonData = JSON.stringify(response.data);
-
-      // Create a Blob containing the text data
       const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
 
       // Create a download link
-      const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'transcript.txt'; // You can customize the filename here
+      a.download = 'transcript.txt';
       a.style.display = 'none';
-
-      // Append the link to the DOM and trigger the download
       document.body.appendChild(a);
       a.click();
 
       // Clean up resources
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      setIsLoading(false); // Hide loading state
     } catch (error) {
       console.error(error);
+      setIsLoading(false); // Hide loading state on error
     }
   };
 
   return (
-    <div>
+    <div className="w-full max-w-md mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Transcript Downloader</h1>
       <input
         type="text"
         placeholder="Paste video link..."
         value={videoLink}
         onChange={handleVideoLinkChange}
+        className="w-full border border-gray-300 rounded-md py-2 px-3 mb-4"
       />
-      <button onClick={fetchDataAndDownload}>Download Transcript</button>
+      <button
+        onClick={fetchDataAndDownload}
+        disabled={isLoading}
+        className={`w-full py-2 ${
+          isLoading
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-500 hover:bg-blue-600 text-white'
+        } rounded-md`}
+      >
+        {isLoading ? 'Downloading...' : 'Download Transcript'}
+      </button>
       {transcriptData && (
-        <div>
-          {/* Display the transcript data here if needed */}
-          <pre>{JSON.stringify(transcriptData, null, 2)}</pre>
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold mb-2">Transcript Data</h2>
+          <pre className="border border-gray-300 rounded-md p-4">{JSON.stringify(transcriptData, null, 2)}</pre>
         </div>
       )}
     </div>
